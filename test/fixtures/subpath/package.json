@@ -1,0 +1,8 @@
+{
+  "name": "subpath-test",
+  "type": "module",
+  "imports": {
+    "#utils": "./src/utils.js",
+    "#lib/*": "./src/lib/*.js"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "impacted",
+  "version": "0.0.1",
+  "description": "Find test files impacted by code changes using static dependency analysis",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "bin": {
+    "impacted": "./bin/impacted.js"
+  },
+  "files": [
+    "src",
+    "bin"
+  ],
+  "scripts": {
+    "test": "node --test test/**/*.test.js"
+  },
+  "keywords": [
+    "test",
+    "testing",
+    "affected",
+    "impacted",
+    "dependency",
+    "graph",
+    "ci",
+    "predictive",
+    "test-selection"
+  ],
+  "author": "sozua",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sozua/impacted.git"
+  },
+  "homepage": "https://github.com/sozua/impacted#readme",
+  "bugs": {
+    "url": "https://github.com/sozua/impacted/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "acorn": "^8.14.0",
+    "acorn-walk": "^8.3.4",
+    "fast-glob": "^3.3.3"
+  }
+}

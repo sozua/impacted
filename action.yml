@@ -1,0 +1,110 @@
+name: 'Find Impacted Tests'
+description: 'Find test files impacted by code changes using static dependency analysis'
+author: 'sozua'
+
+branding:
+  icon: 'filter'
+  color: 'blue'
+
+inputs:
+  base:
+    description: 'Base ref to compare against (commit SHA, branch, or tag)'
+    required: false
+    default: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
+  head:
+    description: 'Head ref (commit SHA, branch, or tag)'
+    required: false
+    default: 'HEAD'
+  pattern:
+    description: 'Glob pattern for test files'
+    required: false
+    default: '**/*.test.js'
+  working-directory:
+    description: 'Working directory'
+    required: false
+    default: '.'
+
+outputs:
+  files:
+    description: 'Space-separated list of impacted test files (for xargs/node --test)'
+    value: ${{ steps.impacted.outputs.files }}
+  files-json:
+    description: 'JSON array of impacted test files'
+    value: ${{ steps.impacted.outputs.files_json }}
+  count:
+    description: 'Number of impacted test files'
+    value: ${{ steps.impacted.outputs.count }}
+  has-impacted:
+    description: 'Whether there are any impacted tests (true/false)'
+    value: ${{ steps.impacted.outputs.has_impacted }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Get changed files
+      id: changed
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # Get changed files between base and head
+        CHANGED=$(git diff --name-only ${{ inputs.base }} ${{ inputs.head }} -- '*.js' '*.mjs' '*.cjs' '*.jsx' '*.ts' '*.mts' '*.cts' '*.tsx' || true)
+
+        if [ -z "$CHANGED" ]; then
+          echo "No source files changed"
+          echo "changed=" >> $GITHUB_OUTPUT
+        else
+          # Escape newlines for GitHub Actions
+          CHANGED_ESCAPED="${CHANGED//$'\n'/'%0A'}"
+          echo "changed<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Find impacted tests
+      id: impacted
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ -z "${{ steps.changed.outputs.changed }}" ]; then
+          echo "files=" >> $GITHUB_OUTPUT
+          echo "files_json=[]" >> $GITHUB_OUTPUT
+          echo "count=0" >> $GITHUB_OUTPUT
+          echo "has_impacted=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        # Install impacted
+        npm install --no-save impacted 2>/dev/null || npx impacted --help >/dev/null 2>&1 || {
+          echo "Installing impacted..."
+          npm install -g impacted
+        }
+
+        # Run impacted with changed files
+        IMPACTED=$(echo "${{ steps.changed.outputs.changed }}" | npx impacted -p "${{ inputs.pattern }}" 2>/dev/null || true)
+
+        if [ -z "$IMPACTED" ]; then
+          echo "files=" >> $GITHUB_OUTPUT
+          echo "files_json=[]" >> $GITHUB_OUTPUT
+          echo "count=0" >> $GITHUB_OUTPUT
+          echo "has_impacted=false" >> $GITHUB_OUTPUT
+        else
+          # Space-separated for node --test
+          FILES_SPACE=$(echo "$IMPACTED" | tr '\n' ' ' | sed 's/ $//')
+          echo "files=$FILES_SPACE" >> $GITHUB_OUTPUT
+
+          # JSON array
+          FILES_JSON=$(echo "$IMPACTED" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "files_json=$FILES_JSON" >> $GITHUB_OUTPUT
+
+          # Count
+          COUNT=$(echo "$IMPACTED" | wc -l | tr -d ' ')
+          echo "count=$COUNT" >> $GITHUB_OUTPUT
+          echo "has_impacted=true" >> $GITHUB_OUTPUT
+
+          echo "Found $COUNT impacted test files"
+        fi
