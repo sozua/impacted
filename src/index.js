@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
 import fg from 'fast-glob';
+import isGlob from 'is-glob';
 import { getImpactedTests } from './graph.js';
 import { createCache, ImportCache } from './cache.js';
 
@@ -50,7 +51,7 @@ export async function findImpacted(options) {
 
   // Resolve test files - either glob or explicit list
   let absoluteTestFiles;
-  if (typeof testFiles === 'string' || (Array.isArray(testFiles) && testFiles.some((t) => t.includes('*')))) {
+  if (typeof testFiles === 'string' || (Array.isArray(testFiles) && testFiles.some((t) => isGlob(t)))) {
     // It's a glob pattern
     const patterns = Array.isArray(testFiles) ? testFiles : [testFiles];
     absoluteTestFiles = await fg(patterns, { cwd, absolute: true });
