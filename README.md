@@ -2,6 +2,8 @@
 
 Find test files impacted by code changes using static dependency analysis.
 
+A userland implementation of [predictive test selection for Node.js test runner](https://github.com/nodejs/node/issues/54173).
+
 [![npm version](https://img.shields.io/npm/v/impacted)](https://www.npmjs.com/package/impacted)
 
 ## Usage
