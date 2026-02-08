@@ -109,3 +109,27 @@ describe('04-test-runners', () => {
     assert.deepEqual(result, ['test/calculator.test.js']);
   });
 });
+
+describe('05-node-test-run', () => {
+  const cwd = resolve(base, '05-node-test-run');
+
+  it('utils.js impacts utils.test.js and format.test.js (transitive)', async (t) => {
+    const result = rel(cwd, await findImpacted({
+      changedFiles: ['src/utils.js'],
+      testFiles: 'test/**/*.test.js',
+      cwd,
+    }));
+    t.diagnostic(`src/utils.js -> ${result.join(', ')}`);
+    assert.deepEqual(result, ['test/format.test.js', 'test/utils.test.js']);
+  });
+
+  it('format.js impacts only format.test.js', async (t) => {
+    const result = rel(cwd, await findImpacted({
+      changedFiles: ['src/format.js'],
+      testFiles: 'test/**/*.test.js',
+      cwd,
+    }));
+    t.diagnostic(`src/format.js -> ${result.join(', ')}`);
+    assert.deepEqual(result, ['test/format.test.js']);
+  });
+});

@@ -1,0 +1,12 @@
+{
+  "name": "example-node-test-run",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "demo": "node run-impacted.js"
+  },
+  "dependencies": {
+    "impacted": "file:../../"
+  }
+}

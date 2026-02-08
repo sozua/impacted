@@ -9,18 +9,21 @@ A userland implementation of [predictive test selection for Node.js test runner]
 ## Usage
 
 ```bash
-# Run only impacted tests
+# Run only impacted tests (--since gets changed files from git diff)
+node --test $(npx impacted --since main)
+
+# Pipe changed files from stdin
 node --test $(git diff --name-only main | npx impacted)
 
 # Works with any test runner
-vitest $(git diff --name-only main | npx impacted)
-jest $(git diff --name-only main | npx impacted)
+vitest $(npx impacted --since main)
+jest $(npx impacted --since main)
 
 # Custom test pattern
-git diff --name-only main | npx impacted -p "src/**/*.spec.js"
+npx impacted --since main -p "src/**/*.spec.js"
 
 # Multiple patterns
-git diff --name-only main | npx impacted -p "test/**/*.test.js" -p "test/**/*.spec.js"
+npx impacted --since main -p "test/**/*.test.js" -p "test/**/*.spec.js"
 ```
 
 ## GitHub Action
@@ -54,9 +57,25 @@ const tests = await findImpacted({
 });
 ```
 
+### `node:test` `run()` integration
+
+```javascript
+import { run } from 'node:test';
+import { findImpacted } from 'impacted';
+
+const files = await findImpacted({
+  changedFiles: ['src/utils.js'],
+  testFiles: 'test/**/*.test.js',
+});
+
+run({ files });
+```
+
+See [examples/05-node-test-run](./examples/05-node-test-run) for a full working example.
+
 ## Limitations
 
-- JavaScript only (`.js`, `.mjs`, `.cjs`, `.jsx`) — no TypeScript yet
+- JavaScript only (`.js`, `.mjs`, `.cjs`, `.jsx`)
 - Static analysis only — dynamic `require(variable)` not supported
 - Local files only — `node_modules` changes won't trigger tests
 

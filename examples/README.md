@@ -6,6 +6,7 @@
 | [02-programmatic-api](./02-programmatic-api) | `findImpacted()`, graph building, caching |
 | [03-subpath-imports](./03-subpath-imports) | `#imports` field resolution |
 | [04-test-runners](./04-test-runners) | Piping output to node --test, vitest, jest |
+| [05-node-test-run](./05-node-test-run) | `node:test` `run()` API integration |
 
 Each example is self-contained. To run one:
 
