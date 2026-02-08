@@ -1,6 +1,6 @@
 # impacted
 
-Find test files impacted by code changes using static dependency analysis.
+It takes a list of changed files, builds a dependency graph from your test files by statically analyzing their imports, and returns only the test files that depend on the changed files.
 
 A userland implementation of [predictive test selection for Node.js test runner](https://github.com/nodejs/node/issues/54173).
 
@@ -23,6 +23,10 @@ git diff --name-only main | npx impacted -p "src/**/*.spec.js"
 ## GitHub Action
 
 ```yaml
+- uses: actions/checkout@v4
+  with:
+    fetch-depth: 0
+
 - uses: sozua/impacted@v1
   id: impacted
   with:
@@ -45,18 +49,6 @@ const tests = await findImpacted({
   testFiles: 'test/**/*.test.js',
   cacheFile: '.impacted-cache.json', // optional
 });
-```
-
-## How it works
-
-Builds a dependency graph from your test files, inverts it, and walks from changed files to find impacted tests.
-
-```
-src/utils.js (changed)
-    ↓ imported by
-src/parser.js
-    ↓ imported by
-test/parser.test.js (impacted)
 ```
 
 ## Limitations
