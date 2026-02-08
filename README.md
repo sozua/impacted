@@ -18,6 +18,9 @@ jest $(git diff --name-only main | npx impacted)
 
 # Custom test pattern
 git diff --name-only main | npx impacted -p "src/**/*.spec.js"
+
+# Multiple patterns
+git diff --name-only main | npx impacted -p "test/**/*.test.js" -p "test/**/*.spec.js"
 ```
 
 ## GitHub Action
@@ -30,7 +33,7 @@ git diff --name-only main | npx impacted -p "src/**/*.spec.js"
 - uses: sozua/impacted@v1
   id: impacted
   with:
-    pattern: '**/*.test.js'
+    pattern: '**/*.{test,spec}.{js,mjs,cjs,jsx}'  # default
 
 - name: Run impacted tests
   if: steps.impacted.outputs.has-impacted == 'true'

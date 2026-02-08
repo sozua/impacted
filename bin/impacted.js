@@ -4,12 +4,14 @@ import { findImpacted } from '../src/index.js';
 
 const args = process.argv.slice(2);
 
-// Parse -p/--pattern flag
-let pattern = '**/*.test.js';
-const patternIndex = args.findIndex((arg) => arg === '-p' || arg === '--pattern');
-if (patternIndex !== -1 && args[patternIndex + 1]) {
-  pattern = args[patternIndex + 1];
+// Parse -p/--pattern flags (supports multiple: -p "*.test.js" -p "*.spec.js")
+const patterns = [];
+for (let i = 0; i < args.length; i++) {
+  if ((args[i] === '-p' || args[i] === '--pattern') && args[i + 1]) {
+    patterns.push(args[++i]);
+  }
 }
+const pattern = patterns.length > 0 ? patterns : '**/*.{test,spec}.{js,mjs,cjs,jsx}';
 
 // Read changed files from stdin
 let input = '';
