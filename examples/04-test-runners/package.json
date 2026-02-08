@@ -1,0 +1,14 @@
+{
+  "name": "example-test-runners",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "demo": "echo 'src/calculator.js' | npx impacted -p 'test/**/*.test.js' | xargs node --test",
+    "demo:vitest": "echo 'src/calculator.js' | npx impacted -p 'test/**/*.test.js' | xargs npx vitest run",
+    "demo:jest": "echo 'src/calculator.js' | npx impacted -p 'test/**/*.test.js' | xargs npx jest"
+  },
+  "dependencies": {
+    "impacted": "file:../../"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "example-subpath-imports",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#utils": "./src/utils.js",
+    "#lib/*": "./src/lib/*.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "demo": "echo 'src/utils.js' | npx impacted -p 'test/**/*.test.js'",
+    "demo:lib": "echo 'src/lib/strings.js' | npx impacted -p 'test/**/*.test.js'"
+  },
+  "dependencies": {
+    "impacted": "file:../../"
+  }
+}

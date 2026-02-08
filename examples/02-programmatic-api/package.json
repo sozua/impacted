@@ -1,0 +1,13 @@
+{
+  "name": "example-programmatic-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "demo": "node run.js",
+    "demo:cache": "node run.js --cache"
+  },
+  "dependencies": {
+    "impacted": "file:../../"
+  }
+}

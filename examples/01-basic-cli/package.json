@@ -1,0 +1,12 @@
+{
+  "name": "example-basic-cli",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js test/*.test.cjs",
+    "demo": "echo 'src/math.js' | npx impacted -p 'test/**/*.test.{js,cjs}'"
+  },
+  "dependencies": {
+    "impacted": "file:../../"
+  }
+}

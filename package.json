@@ -4,8 +4,12 @@
   "description": "Find test files impacted by code changes using static dependency analysis",
   "type": "module",
   "main": "./src/index.js",
+  "types": "./src/index.d.ts",
   "exports": {
-    ".": "./src/index.js"
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
   },
   "bin": {
     "impacted": "./bin/impacted.js"
@@ -15,7 +19,8 @@
     "bin"
   ],
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "test:examples": "node --test examples/test.js"
   },
   "keywords": [
     "test",
