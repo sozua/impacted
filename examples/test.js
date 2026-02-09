@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   findImpacted,
   buildDependencyGraph,
@@ -8,7 +9,7 @@ import {
   createCache,
 } from 'impacted';
 
-const base = import.meta.dirname;
+const base = import.meta.dirname ?? fileURLToPath(new URL('.', import.meta.url));
 const rel = (cwd, files) => files.map((f) => f.replace(cwd + '/', '')).sort();
 
 describe('01-basic-cli', () => {
