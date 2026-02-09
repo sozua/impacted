@@ -1,6 +1,6 @@
 {
   "name": "impacted",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Find test files impacted by code changes using static dependency analysis",
   "type": "module",
   "main": "./src/index.js",
