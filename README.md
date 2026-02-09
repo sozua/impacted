@@ -1,8 +1,6 @@
 # impacted
 
-It takes a list of changed files, builds a dependency graph from your test files by statically analyzing their imports, and returns only the test files that depend on the changed files.
-
-A userland implementation of [predictive test selection for Node.js test runner](https://github.com/nodejs/node/issues/54173).
+Find test files impacted by code changes. Takes a list of changed files, builds a dependency graph by statically analyzing imports, and returns only the tests that depend on what changed.
 
 [![npm version](https://img.shields.io/npm/v/impacted)](https://www.npmjs.com/package/impacted)
 
@@ -75,14 +73,14 @@ See [examples/05-node-test-run](./examples/05-node-test-run) for a full working 
 
 ## TypeScript
 
-TypeScript files (`.ts`, `.mts`, `.cts`, `.tsx`) are supported out of the box on Node.js >= 22.7. Type stripping is handled via `node:module.stripTypeScriptTypes()` — no additional dependencies required.
+TypeScript files (`.ts`, `.mts`, `.cts`, `.tsx`) are supported out of the box on Node.js >= 22.7. Type stripping is handled via `node:module.stripTypeScriptTypes()`, no additional dependencies required.
 
 Follows Node.js core's TypeScript philosophy: explicit extensions, no `tsconfig.json`, no path aliases.
 
 ## Limitations
 
-- Static analysis only — dynamic `require(variable)` not supported
-- Local files only — `node_modules` changes won't trigger tests
+- Static analysis only, dynamic `require(variable)` is not supported
+- Local files only, `node_modules` changes won't trigger tests
 - TypeScript support requires Node.js >= 22.7 (JS analysis works on Node.js >= 18)
 
 ## Requirements
