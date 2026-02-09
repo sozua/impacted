@@ -5,10 +5,13 @@ import { fileURLToPath } from 'node:url';
 import { unlinkSync, existsSync } from 'node:fs';
 import { findImpacted, buildDependencyGraph, parseImports, resolveSpecifier, createCache } from '../src/index.js';
 
+import * as nodeModule from 'node:module';
+
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const fixtures = join(__dirname, 'fixtures');
 const subpathFixtures = join(fixtures, 'subpath');
 const tsFixtures = join(fixtures, 'typescript');
+const hasTypeScriptStripping = typeof nodeModule.stripTypeScriptTypes === 'function';
 
 describe('parseImports', () => {
   test('parses CJS require', () => {
@@ -185,7 +188,7 @@ describe('subpath imports (#imports)', () => {
   });
 });
 
-describe('TypeScript parseImports', () => {
+describe('TypeScript parseImports', { skip: !hasTypeScriptStripping && 'requires Node.js >= 22.7' }, () => {
   test('parses TS imports with type annotations', () => {
     const source = `import { add } from './source.ts';\nconst x: number = add(1, 2);`;
     const imports = parseImports(source, { typescript: true });
@@ -234,7 +237,7 @@ export type { Result, Mapper };
   });
 });
 
-describe('TypeScript resolver', () => {
+describe('TypeScript resolver', { skip: !hasTypeScriptStripping && 'requires Node.js >= 22.7' }, () => {
   test('resolves .ts relative specifier', () => {
     const parentPath = join(tsFixtures, 'affected.test.ts');
     const resolved = resolveSpecifier('./source.ts', parentPath);
@@ -254,7 +257,7 @@ describe('TypeScript resolver', () => {
   });
 });
 
-describe('TypeScript buildDependencyGraph', () => {
+describe('TypeScript buildDependencyGraph', { skip: !hasTypeScriptStripping && 'requires Node.js >= 22.7' }, () => {
   test('builds graph from TS files', () => {
     const testFiles = [
       join(tsFixtures, 'affected.test.ts'),
@@ -280,7 +283,7 @@ describe('TypeScript buildDependencyGraph', () => {
   });
 });
 
-describe('TypeScript findImpacted', () => {
+describe('TypeScript findImpacted', { skip: !hasTypeScriptStripping && 'requires Node.js >= 22.7' }, () => {
   test('finds directly impacted TS tests', async () => {
     const impacted = await findImpacted({
       changedFiles: [join(tsFixtures, 'source.ts')],
