@@ -36,7 +36,7 @@ npx impacted --since main -p "test/**/*.test.js" -p "test/**/*.spec.js"
 - uses: sozua/impacted@v1
   id: impacted
   with:
-    pattern: '**/*.{test,spec}.{js,mjs,cjs,jsx}'  # default
+    pattern: '**/*.{test,spec}.{js,mjs,cjs,jsx,ts,mts,cts,tsx}'  # default
 
 - name: Run impacted tests
   if: steps.impacted.outputs.has-impacted == 'true'
@@ -73,15 +73,21 @@ run({ files });
 
 See [examples/05-node-test-run](./examples/05-node-test-run) for a full working example.
 
+## TypeScript
+
+TypeScript files (`.ts`, `.mts`, `.cts`, `.tsx`) are supported out of the box on Node.js >= 22.7. Type stripping is handled via `node:module.stripTypeScriptTypes()` — no additional dependencies required.
+
+Follows Node.js core's TypeScript philosophy: explicit extensions, no `tsconfig.json`, no path aliases.
+
 ## Limitations
 
-- JavaScript only (`.js`, `.mjs`, `.cjs`, `.jsx`)
 - Static analysis only — dynamic `require(variable)` not supported
 - Local files only — `node_modules` changes won't trigger tests
+- TypeScript support requires Node.js >= 22.7 (JS analysis works on Node.js >= 18)
 
 ## Requirements
 
-- Node.js >= 18
+- Node.js >= 18 (TypeScript support requires >= 22.7)
 
 ## License
 

@@ -2,8 +2,7 @@ import { readFileSync } from 'node:fs';
 import { extname } from 'node:path';
 import { parseImports } from './parser.js';
 import { resolveSpecifier } from './resolver.js';
-
-const SUPPORTED_EXTENSIONS = ['.js', '.mjs', '.cjs', '.jsx'];
+import { SUPPORTED_EXTENSIONS, TS_EXTENSIONS } from './constants.js';
 
 /** @typedef {import('./cache.js').ImportCache} ImportCache */
 
@@ -13,7 +12,7 @@ const SUPPORTED_EXTENSIONS = ['.js', '.mjs', '.cjs', '.jsx'];
  * @returns {boolean}
  */
 function isSupportedFile(filePath) {
-  return SUPPORTED_EXTENSIONS.includes(extname(filePath));
+  return SUPPORTED_EXTENSIONS.has(extname(filePath));
 }
 
 /**
@@ -28,7 +27,8 @@ export function extractImports(filePath) {
   } catch {
     return [];
   }
-  return parseImports(source);
+  const typescript = TS_EXTENSIONS.has(extname(filePath));
+  return parseImports(source, { typescript });
 }
 
 const DEFAULT_EXCLUDE_PATHS = ['node_modules', 'dist'];

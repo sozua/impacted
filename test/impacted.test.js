@@ -8,6 +8,7 @@ import { findImpacted, buildDependencyGraph, parseImports, resolveSpecifier, cre
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const fixtures = join(__dirname, 'fixtures');
 const subpathFixtures = join(fixtures, 'subpath');
+const tsFixtures = join(fixtures, 'typescript');
 
 describe('parseImports', () => {
   test('parses CJS require', () => {
@@ -181,6 +182,145 @@ describe('subpath imports (#imports)', () => {
     });
 
     assert(impacted.includes(join(subpathFixtures, 'app.test.js')));
+  });
+});
+
+describe('TypeScript parseImports', () => {
+  test('parses TS imports with type annotations', () => {
+    const source = `import { add } from './source.ts';\nconst x: number = add(1, 2);`;
+    const imports = parseImports(source, { typescript: true });
+    assert.deepStrictEqual(imports, ['./source.ts']);
+  });
+
+  test('import type is stripped (no runtime effect)', () => {
+    const source = `import type { Result } from './types.ts';`;
+    const imports = parseImports(source, { typescript: true });
+    assert.deepStrictEqual(imports, []);
+  });
+
+  test('parses generics and interfaces', () => {
+    const source = `
+import { add } from './source.ts';
+
+interface Result<T> {
+  value: T;
+  error?: string;
+}
+
+type Mapper<T, U> = (input: T) => U;
+
+export type { Result, Mapper };
+`;
+    const imports = parseImports(source, { typescript: true });
+    assert.deepStrictEqual(imports, ['./source.ts']);
+  });
+
+  test('parses CJS require in TS', () => {
+    const source = `const { helper } = require('./helper.ts');\nconst x: string = helper();`;
+    const imports = parseImports(source, { typescript: true });
+    assert.deepStrictEqual(imports, ['./helper.ts']);
+  });
+
+  test('parses export from in TS (type-only exports stripped)', () => {
+    const source = `export { add } from './source.ts';\nexport type { Result } from './types.ts';`;
+    const imports = parseImports(source, { typescript: true });
+    assert.deepStrictEqual(imports, ['./source.ts']);
+  });
+
+  test('parses dynamic import in TS', () => {
+    const source = `const mod = await import('./lazy.ts');`;
+    const imports = parseImports(source, { typescript: true });
+    assert.deepStrictEqual(imports, ['./lazy.ts']);
+  });
+});
+
+describe('TypeScript resolver', () => {
+  test('resolves .ts relative specifier', () => {
+    const parentPath = join(tsFixtures, 'affected.test.ts');
+    const resolved = resolveSpecifier('./source.ts', parentPath);
+    assert.strictEqual(resolved, join(tsFixtures, 'source.ts'));
+  });
+
+  test('resolves .ts from another TS file', () => {
+    const parentPath = join(tsFixtures, 'helper.ts');
+    const resolved = resolveSpecifier('./source.ts', parentPath);
+    assert.strictEqual(resolved, join(tsFixtures, 'source.ts'));
+  });
+
+  test('returns null for non-existent .ts file', () => {
+    const parentPath = join(tsFixtures, 'helper.ts');
+    const resolved = resolveSpecifier('./nonexistent.ts', parentPath);
+    assert.strictEqual(resolved, null);
+  });
+});
+
+describe('TypeScript buildDependencyGraph', () => {
+  test('builds graph from TS files', () => {
+    const testFiles = [
+      join(tsFixtures, 'affected.test.ts'),
+      join(tsFixtures, 'unaffected.test.ts'),
+    ];
+    const graph = buildDependencyGraph(testFiles);
+
+    assert(graph.has(join(tsFixtures, 'affected.test.ts')));
+    assert(graph.has(join(tsFixtures, 'unaffected.test.ts')));
+
+    const affectedDeps = graph.get(join(tsFixtures, 'affected.test.ts'));
+    assert(affectedDeps.has(join(tsFixtures, 'source.ts')));
+  });
+
+  test('follows transitive TS dependencies', () => {
+    const testFiles = [join(tsFixtures, 'indirect.test.ts')];
+    const graph = buildDependencyGraph(testFiles);
+
+    // indirect.test.ts -> helper.ts -> source.ts
+    assert(graph.has(join(tsFixtures, 'indirect.test.ts')));
+    assert(graph.has(join(tsFixtures, 'helper.ts')));
+    assert(graph.has(join(tsFixtures, 'source.ts')));
+  });
+});
+
+describe('TypeScript findImpacted', () => {
+  test('finds directly impacted TS tests', async () => {
+    const impacted = await findImpacted({
+      changedFiles: [join(tsFixtures, 'source.ts')],
+      testFiles: [
+        join(tsFixtures, 'affected.test.ts'),
+        join(tsFixtures, 'unaffected.test.ts'),
+      ],
+      cwd: tsFixtures,
+    });
+
+    assert(impacted.includes(join(tsFixtures, 'affected.test.ts')));
+    assert(!impacted.includes(join(tsFixtures, 'unaffected.test.ts')));
+  });
+
+  test('finds transitively impacted TS tests', async () => {
+    const impacted = await findImpacted({
+      changedFiles: [join(tsFixtures, 'source.ts')],
+      testFiles: [
+        join(tsFixtures, 'affected.test.ts'),
+        join(tsFixtures, 'indirect.test.ts'),
+        join(tsFixtures, 'unaffected.test.ts'),
+      ],
+      cwd: tsFixtures,
+    });
+
+    assert(impacted.includes(join(tsFixtures, 'affected.test.ts')));
+    assert(impacted.includes(join(tsFixtures, 'indirect.test.ts')));
+    assert(!impacted.includes(join(tsFixtures, 'unaffected.test.ts')));
+  });
+
+  test('works with glob patterns for TS', async () => {
+    const impacted = await findImpacted({
+      changedFiles: ['source.ts'],
+      testFiles: '*.test.ts',
+      cwd: tsFixtures,
+    });
+
+    assert(impacted.some((f) => f.endsWith('affected.test.ts')));
+    assert(impacted.some((f) => f.endsWith('indirect.test.ts')));
+    assert(!impacted.some((f) => f.endsWith('unaffected.test.ts')));
   });
 });
 

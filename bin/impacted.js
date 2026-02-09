@@ -15,7 +15,7 @@ for (let i = 0; i < args.length; i++) {
     since = args[++i];
   }
 }
-const pattern = patterns.length > 0 ? patterns : '**/*.{test,spec}.{js,mjs,cjs,jsx}';
+const pattern = patterns.length > 0 ? patterns : '**/*.{test,spec}.{js,mjs,cjs,jsx,ts,mts,cts,tsx}';
 
 async function run(changedFiles) {
   if (changedFiles.length === 0) {

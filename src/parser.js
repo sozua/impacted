@@ -1,13 +1,34 @@
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
+import * as nodeModule from 'node:module';
 
 /**
  * Extract all import/require specifiers from source code
  * Handles ESM (import/export) and CJS (require) patterns
  * @param {string} source - The source code
+ * @param {Object} [options]
+ * @param {boolean} [options.typescript=false] - Strip TypeScript syntax before parsing (requires Node >= 22.7)
  * @returns {string[]} Array of import specifiers
  */
-export function parseImports(source) {
+export function parseImports(source, { typescript = false } = {}) {
+  if (typescript) {
+    if (!nodeModule.stripTypeScriptTypes) {
+      if (!parseImports._tsWarned) {
+        parseImports._tsWarned = true;
+        process.emitWarning(
+          'TypeScript support requires Node.js >= 22.7',
+          'UnsupportedWarning',
+        );
+      }
+      return [];
+    }
+    try {
+      source = nodeModule.stripTypeScriptTypes(source);
+    } catch {
+      return [];
+    }
+  }
+
   const imports = [];
 
   let ast;

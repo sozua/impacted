@@ -1,7 +1,8 @@
 import { createRequire } from 'node:module';
 import { builtinModules } from 'node:module';
-import { readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, extname, join, resolve } from 'node:path';
+import { TS_EXTENSIONS } from './constants.js';
 
 /**
  * Find the nearest package.json from a given path
@@ -111,6 +112,14 @@ export function resolveSpecifier(specifier, parentPath) {
     const require = createRequire(parentPath);
     return require.resolve(specifier);
   } catch {
+    // require.resolve doesn't handle TS extensions
+    // For relative specifiers with explicit TS extensions, try manual resolution
+    if (specifier.startsWith('.') && TS_EXTENSIONS.has(extname(specifier))) {
+      const resolved = resolve(dirname(parentPath), specifier);
+      if (existsSync(resolved)) {
+        return resolved;
+      }
+    }
     return null;
   }
 }

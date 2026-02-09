@@ -52,8 +52,13 @@ export function invertGraph(
   graph: Map<string, Set<string>>,
 ): Map<string, Set<string>>;
 
+export interface ParseImportsOptions {
+  /** Strip TypeScript syntax before parsing (requires Node >= 22.7) */
+  typescript?: boolean;
+}
+
 /** Extract import/require specifiers from source code */
-export function parseImports(source: string): string[];
+export function parseImports(source: string, options?: ParseImportsOptions): string[];
 
 /** Resolve an import specifier to an absolute file path */
 export function resolveSpecifier(

@@ -18,7 +18,7 @@ inputs:
   pattern:
     description: 'Glob pattern for test files'
     required: false
-    default: '**/*.{test,spec}.{js,mjs,cjs,jsx}'
+    default: '**/*.{test,spec}.{js,mjs,cjs,jsx,ts,mts,cts,tsx}'
   working-directory:
     description: 'Working directory'
     required: false
